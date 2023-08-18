@@ -1,3 +1,5 @@
+import re
+
 class Parser(object):
 
     def __init__(self):
@@ -11,6 +13,10 @@ class Parser(object):
         #   parameters: diccionario con los nombre y valores de los parametros pasados en el request
         #   message:    string con el mensaje del request
         #   version:    version de HTTP parseada, en este caso, esta clase solo parsea version 1.1
+        # p.parse_request('''GET server.get.message?t=45&id=123 HTTP/1.1''') -> {'method': 'GET', 'rute': 'server.send.message', 'parameters': {'t': 45, 'id': 123}, 'message': '', 'version': 1.1}
+
+        method = re.search("(POST|GET|PUT|DELETE).*", message)
+        method.groups()
 
         ### COMPLETAR
         return {'method': '', 'rute': '', 'parameters': {}, 'message': '', 'version': 0.0}
@@ -31,7 +37,6 @@ class Parser(object):
 # para testear pueden usar los siguientes test:
 
 # p.parse_request('''POST name HTTP/1.1''')                          -> {'method': 'POST', 'rute': 'name', 'parameters': {}, 'message': '', 'version': 1.1}
-# p.parse_request('''GET server.get.message?t=45&id=123 HTTP/1.1''') -> {'method': 'GET', 'rute': 'server.send.message', 'parameters': {'t': 45, 'id': 123}, 'message': '', 'version': 1.1}
 # p.parse_request('''POST server.send.message HTTP/1.1
 #                    t: 56
 #                    id: 123
@@ -43,3 +48,14 @@ class Parser(object):
 #                     id: 123
 #  
 #                     No se encontro el id 123''') -> {'status_code': 404, 'status': 'Not Found', 'parameters': {id: 123}, 'message': 'No se encontro el id 123', 'version': 1.1}
+
+if __name__ == "__main__":
+
+
+    messages = ['''GET server.get.message?t=45&id=123 HTTP/1.1''', '''POST name HTTP/1.1''', '''HTTP/1.1 200 OK''', ]
+    for message in messages:
+        try:
+            method = re.search("(POST|GET|PUT|DELETE).*", message)
+            print(method.groups())
+        except:
+            pass
