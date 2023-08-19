@@ -15,9 +15,6 @@ class Parser(object):
         #   version:    version de HTTP parseada, en este caso, esta clase solo parsea version 1.1
         # p.parse_request('''GET server.get.message?t=45&id=123 HTTP/1.1''') -> {'method': 'GET', 'rute': 'server.send.message', 'parameters': {'t': 45, 'id': 123}, 'message': '', 'version': 1.1}
 
-        method = re.search("(POST|GET|PUT|DELETE).*", message)
-        method.groups()
-
         ### COMPLETAR
         return {'method': '', 'rute': '', 'parameters': {}, 'message': '', 'version': 0.0}
     
@@ -31,6 +28,64 @@ class Parser(object):
 
         ### COMPLETAR
         return {'status_code': 000, 'status': '', 'parameters': {}, 'message': '', 'version': 0.0}
+    
+
+    def first_validation(self, message):
+
+        if "\n" in message:
+            lines = message.partition("\n")
+        else:
+            return self.__second_validation(message)
+        return lines
+    
+    def __second_validation(self, message):
+        pass
+    
+    def __spaces(self, message):
+        
+        space_separated = r'(\S+)'
+        results = re.findall(space_separated, message)
+        return results
+
+    def __get_method(self, message):
+        
+        method = re.search("(POST|GET|PUT|DELETE)", message)
+        result = method.groups()
+        return result[0]
+
+    def __get_route(self, message):
+        
+        rute = re.search("[^\s]*\s([^\?\s]*)", message)
+        result = rute.groups()
+        return result[0]
+
+    def __get_parameters(self, message):
+        
+        terms = self.__spaces(message)
+
+        for term in terms:
+            partitions = term.partition("?")
+            try:
+                index = partitions.index("?")
+                parameters = partitions[index+1].split("&")
+                return parameters
+            except Exception as e:
+                return []
+            
+    def __parameters_to_dict(self, parameters):
+        
+        result = {}
+        for parameter in parameters:
+            name = re.search("(.*)=", parameter)
+            result_name = name.group()
+            value = re.search("=(.*)", parameter)
+            result_value = value.group()
+
+            result[result_name] = result_value
+
+        return result
+
+
     
 
 
@@ -51,11 +106,31 @@ class Parser(object):
 
 if __name__ == "__main__":
 
+    x = "(\S+)"
 
-    messages = ['''GET server.get.message?t=45&id=123 HTTP/1.1''', '''POST name HTTP/1.1''', '''HTTP/1.1 200 OK''', ]
+    messages = [
+        '''GET server.get.message?t=45&id=123 HTTP/1.1''', 
+        '''POST name HTTP/1.1''', 
+        '''HTTP/1.1 200 OK''', 
+        '''POST server.send.message HTTP/1.1
+           t: 56
+           id: 123
+ 
+           Hola, este es el cuerpo del request.''',
+        '''HTTP/1.1 404 Not Found
+                     id: 123
+  
+                     No se encontro el id 123'''
+   ]
+    
+    p = Parser()
     for message in messages:
-        try:
-            method = re.search("(POST|GET|PUT|DELETE).*", message)
-            print(method.groups())
-        except:
+        result = p.first_validation(message)
+        if result == None:
             pass
+        else:
+            for i in result:
+                print(i)
+        print("-----------------")
+
+    
