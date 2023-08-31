@@ -32,17 +32,18 @@ class Parser(object):
 
     def first_validation(self, message):
 
-        if "\n" in message:
-            lines = message.partition("\n")
-        else:
-            return self.__second_validation(message)
-        return lines
-    
-    def __second_validation(self, message):
-        
-        expresion = r'\s+'
-        result = re.split(expresion, message)
+        result = message.split("\n")
 
+        return result
+    
+    def second_validation(self, message):
+        
+        result = []
+        for part in message:
+            new = self.without_spaces_in_the_begining(part)
+            if new == "":
+                continue
+            result.append(new)
         return result
     
     def __spaces(self, message):
@@ -130,15 +131,12 @@ if __name__ == "__main__":
                      No se encontro el id 123'''
    ]
     
+    mensaje = [messages[0]]
+    
     p = Parser()
     for message in messages:
         result = p.first_validation(message)
-        if result == None:
-            pass
-        else:
-            for i in result:
-                print(p.without_spaces_in_the_begining(i))
-                print("<->")
-        print("-----------------")
+        result = p.second_validation(result)
+        print(result)
 
     
