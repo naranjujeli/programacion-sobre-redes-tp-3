@@ -9,7 +9,7 @@ from parser_class import Parser
 # Por cuestiones de seguridad el TOKEN no deberia estar en el codigo, tendria que estar oculto.
 # Para este TP no vamos a tener en cuenta temas de seguridad.
 def get_token():
-    with open('../TOKEN', 'r') as file:
+    with open('TOKEN', 'r') as file:
         return file.readline()
 
 DIRECCION_IP = "127.0.0.1"
