@@ -15,7 +15,7 @@ def get_token():
 DIRECCION_IP = "127.0.0.1"
 PORT = 65432
 TOKEN = get_token()
-CHANNEL_ID = 10934545676603203311 ### Completar
+CHANNEL_ID = 1146923802664632453 ### Completar
 client = discord.Client(intents=discord.Intents.all())
 parser = Parser()
 BOT_NAME = 'Shaggy'   ### Completar
@@ -64,7 +64,8 @@ def open_socket_to_connection():
 @client.event
 async def on_ready():
     print('Bot conectado')
-    await open_socket_to_connection()
+    await client.get_channel(CHANNEL_ID).send("eeeaaaa")
+    # await open_socket_to_connection()
 
 @client.event
 async def on_message(message):
@@ -73,7 +74,12 @@ async def on_message(message):
     if message.author == client.user: 
         return
     
-    ### Completar
     # Dependiendo del contenido del mensaje se va decidir que accion se hace
+
+    print(f"Recibido el mensaje: {message.content}")
+
+    if message.content == "hola":
+        message.channel.send("hola")
+
 
 client.run(TOKEN)
