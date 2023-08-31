@@ -6,18 +6,18 @@ import socket
 import discord
 from parser_class import Parser
 
-# Por cuestiones de seguridad el token no deberia estar en el codigo, tendria que estar oculto.
+# Por cuestiones de seguridad el TOKEN no deberia estar en el codigo, tendria que estar oculto.
 # Para este TP no vamos a tener en cuenta temas de seguridad.
 def get_token():
-    return 'El token va aca'
+    return 'MTE0MTg4MzI3NDI4MTYxNTUxMA.GNkDP-.EDmhwJZCIU5lTGvnjwYgXkUkmor-c6hEEABbaM'
 
-direccion_ip = "127.0.0.1"
-port = 65432              
-token = get_token()
-chanel_id = 10934545676603203311 ### Completar
+DIRECCION_IP = "127.0.0.1"
+PORT = 65432
+TOKEN = get_token()
+CHANNEL_ID = 10934545676603203311 ### Completar
 client = discord.Client(intents=discord.Intents.all())
 parser = Parser()
-bot_name = ''   ### Completar
+BOT_NAME = 'marcelo'   ### Completar
 
 
 
@@ -25,9 +25,9 @@ async def send_response(conn, data):
     data = parser.parse_request(data)
 
     if data['rute'] == 'nombre':
-        conn.sendall(bot_name.encode())
-        channel = client.get_channel(chanel_id)
-        await channel.send(f"Mi nombre es: {bot_name}")
+        conn.sendall(BOT_NAME.encode())
+        channel = client.get_channel(CHANNEL_ID)
+        await channel.send(f"Mi nombre es: {BOT_NAME}")
 
     elif data['rute'] == 'mandar_mensaje':
         print('envia mensaje al canal de texto')
@@ -44,16 +44,25 @@ async def send_response(conn, data):
     else:
         conn.sendall(b'Ruta desconocida')
 
-async def open_socket_to_conection():
+def open_socket_to_connection():
     # Abrir la coneccion al Cliente
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        
-        ### Completar
-        await send_response(None, None)
+        s.bind((DIRECCION_IP, PORT))
+        s.listen()
+        connection, address = s.accept()
+        with connection:
+            print("Conectando a", address)
+            while True:
+                data = connection.recv(1024)
+                decoded_data = data.decode('utf-8')
+
+                print("Mensaje recibido:", decoded_data)
+                connection.sendall("El mensaje fue recibido por el servidor".encode())
+        # await send_response(None, None)
 
 @client.event
 async def on_ready():
-    await open_socket_to_conection()
+    await open_socket_to_connection()
     print('Bot conectado')
 
 @client.event
@@ -66,4 +75,6 @@ async def on_message(message):
     ### Completar
     # Dependiendo del contenido del mensaje se va decidir que accion se hace
 
-client.run(token)
+# client.run(TOKEN)
+
+open_socket_to_connection()

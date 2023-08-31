@@ -1,15 +1,20 @@
 # Este script interactua con el usuario y envia mediante protocolo IP/TCP, HTTP y Sockets, las acciones que debe hacer servidor.py
 
-ip_to_send = '127.0.0.1'
-port_to_send = 65432
+import socket
+
+DESTINATION_IP_ADDRESS = '127.0.0.1'
+DESTINATION_PORT = 65432
 
 def obtener_nombre():
     ### Completar
     pass
 
 def enviar_mensaje(message):
-    ### Completar
-    pass
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((DESTINATION_IP_ADDRESS, DESTINATION_PORT))
+        s.sendall(message.encode())
+        data = s.recv(1024)
+        print("Response from the server:", data.decode())
 
 def leer_mensaje():
     ### Completar
@@ -34,7 +39,7 @@ while action != 0:
         obtener_nombre()
 
     elif action == 2:
-        enviar_mensaje('')
+        enviar_mensaje('Esto es un mensaje desde el cliente')
 
     elif action == 3:
         leer_mensaje()
