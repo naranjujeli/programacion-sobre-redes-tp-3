@@ -39,7 +39,11 @@ class Parser(object):
         return lines
     
     def __second_validation(self, message):
-        pass
+        
+        expresion = r'\s+'
+        result = re.split(expresion, message)
+
+        return result
     
     def __spaces(self, message):
         
@@ -84,6 +88,11 @@ class Parser(object):
             result[result_name] = result_value
 
         return result
+    
+    def without_spaces_in_the_begining(self, text):
+        
+        result = re.search("\s+(.*)", text)
+        return result.groups()[0]
 
 
     
@@ -105,8 +114,6 @@ class Parser(object):
 #                     No se encontro el id 123''') -> {'status_code': 404, 'status': 'Not Found', 'parameters': {id: 123}, 'message': 'No se encontro el id 123', 'version': 1.1}
 
 if __name__ == "__main__":
-
-    x = "(\S+)"
 
     messages = [
         '''GET server.get.message?t=45&id=123 HTTP/1.1''', 
@@ -130,7 +137,8 @@ if __name__ == "__main__":
             pass
         else:
             for i in result:
-                print(i)
+                print(p.without_spaces_in_the_begining(i))
+                print("<->")
         print("-----------------")
 
     
