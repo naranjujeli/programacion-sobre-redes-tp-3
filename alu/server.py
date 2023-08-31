@@ -9,7 +9,7 @@ from parser_class import Parser
 # Por cuestiones de seguridad el TOKEN no deberia estar en el codigo, tendria que estar oculto.
 # Para este TP no vamos a tener en cuenta temas de seguridad.
 def get_token():
-    return 'MTE0MTg4MzI3NDI4MTYxNTUxMA.GNkDP-.EDmhwJZCIU5lTGvnjwYgXkUkmor-c6hEEABbaM'
+    return 'MTE0NjkxNTg3ODE0Mzc5NTMzMA.GvCiK_.CbkqgF4XWk2wissJ3u5oDOKa8bnvKauahaGu-U'
 
 DIRECCION_IP = "127.0.0.1"
 PORT = 65432
@@ -17,7 +17,7 @@ TOKEN = get_token()
 CHANNEL_ID = 10934545676603203311 ### Completar
 client = discord.Client(intents=discord.Intents.all())
 parser = Parser()
-BOT_NAME = 'marcelo'   ### Completar
+BOT_NAME = 'Shaggy'   ### Completar
 
 
 
