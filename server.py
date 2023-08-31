@@ -9,7 +9,8 @@ from parser_class import Parser
 # Por cuestiones de seguridad el TOKEN no deberia estar en el codigo, tendria que estar oculto.
 # Para este TP no vamos a tener en cuenta temas de seguridad.
 def get_token():
-    return 'MTE0MTg4MzI3NDI4MTYxNTUxMA.GNkDP-.EDmhwJZCIU5lTGvnjwYgXkUkmor-c6hEEABbaM'
+    with open('TOKEN', 'r') as file:
+        return file.readline()
 
 DIRECCION_IP = "127.0.0.1"
 PORT = 65432
@@ -17,7 +18,7 @@ TOKEN = get_token()
 CHANNEL_ID = 10934545676603203311 ### Completar
 client = discord.Client(intents=discord.Intents.all())
 parser = Parser()
-BOT_NAME = 'marcelo'   ### Completar
+BOT_NAME = 'Shaggy'   ### Completar
 
 
 
@@ -62,8 +63,8 @@ def open_socket_to_connection():
 
 @client.event
 async def on_ready():
-    await open_socket_to_connection()
     print('Bot conectado')
+    await open_socket_to_connection()
 
 @client.event
 async def on_message(message):
@@ -75,6 +76,4 @@ async def on_message(message):
     ### Completar
     # Dependiendo del contenido del mensaje se va decidir que accion se hace
 
-# client.run(TOKEN)
-
-open_socket_to_connection()
+client.run(TOKEN)
