@@ -9,7 +9,8 @@ from parser_class import Parser
 # Por cuestiones de seguridad el TOKEN no deberia estar en el codigo, tendria que estar oculto.
 # Para este TP no vamos a tener en cuenta temas de seguridad.
 def get_token():
-    return 'MTE0NjkxNTg3ODE0Mzc5NTMzMA.GvCiK_.CbkqgF4XWk2wissJ3u5oDOKa8bnvKauahaGu-U'
+    with open('../TOKEN', 'r') as file:
+        return file.readline()
 
 DIRECCION_IP = "127.0.0.1"
 PORT = 65432
@@ -62,8 +63,8 @@ def open_socket_to_connection():
 
 @client.event
 async def on_ready():
-    await open_socket_to_connection()
     print('Bot conectado')
+    await open_socket_to_connection()
 
 @client.event
 async def on_message(message):
@@ -75,6 +76,4 @@ async def on_message(message):
     ### Completar
     # Dependiendo del contenido del mensaje se va decidir que accion se hace
 
-# client.run(TOKEN)
-
-open_socket_to_connection()
+client.run(TOKEN)
