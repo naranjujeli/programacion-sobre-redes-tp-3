@@ -23,7 +23,7 @@ BOT_NAME = 'Shaggy'
 
 
 async def send_response(conn, data):
-    data = parser.parse_request(data)
+    # data = parser.parse_request(data)
 
     if data['rute'] == 'nombre':
         conn.sendall(BOT_NAME.encode())
@@ -45,7 +45,7 @@ async def send_response(conn, data):
     else:
         conn.sendall(b'Ruta desconocida')
 
-def open_socket_to_connection():
+async def open_socket_to_connection():
     # Abrir la conexión al Cliente
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((DIRECCION_IP, PORT))
@@ -58,7 +58,7 @@ def open_socket_to_connection():
                 decoded_data = data.decode('utf-8')
                 print("Mensaje recibido:", decoded_data)
                 connection.sendall("El mensaje fue recibido por el servidor".encode())
-        # await send_response(None, None)
+                await send_response(connection, {"rute": decoded_data})
 
 @client.event
 async def on_ready():

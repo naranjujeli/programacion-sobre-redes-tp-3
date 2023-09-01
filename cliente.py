@@ -5,19 +5,18 @@ import socket
 DESTINATION_IP_ADDRESS = '127.0.0.1'
 DESTINATION_PORT = 65432
 
-def obtener_nombre():
+def obtener_nombre(s):
+    s.sendall("nombre".encode())
+
+def enviar_mensaje(s, mensaje):
     # TODO
     pass
 
-def enviar_mensaje(mensaje):
+def leer_mensaje(s):
     # TODO
     pass
 
-def leer_mensaje():
-    # TODO
-    pass
-
-def acceso_base_de_datos(acceso):
+def acceso_base_de_datos(s, acceso):
     # TODO
     pass
 
@@ -40,16 +39,16 @@ def main():
             
             action = int(input())
             if action == 1:
-                obtener_nombre()
+                obtener_nombre(s)
 
             elif action == 2:
-                enviar_mensaje('')
+                enviar_mensaje(s, '')
 
             elif action == 3:
-                leer_mensaje()
+                leer_mensaje(s)
 
             elif action == 4:
-                acceso_base_de_datos('')
+                acceso_base_de_datos(s, '')
 
             elif action != 0:
                 print('Error, accion no valida.\n\n\n')
