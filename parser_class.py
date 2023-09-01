@@ -18,11 +18,12 @@ class Parser(object):
         method = self.__get_method(message)
         route = self.__get_route(message)
         parameters = self.__get_parameters(message)
+        specific_message = self.__get_message(message)
         
 
 
         ### COMPLETAR
-        return {'method': method, 'rute': route, 'parameters': parameters, 'message': '', 'version': 0.0}
+        return {'method': method, 'rute': route, 'parameters': parameters, 'message': specific_message, 'version': 1.1}
     
     def parse_response(self, message):
         # Este metodo parsea el string de un response en formato HTTP V1.1 y devuelve un objeto donde se indica:
@@ -58,21 +59,31 @@ class Parser(object):
         method = self.__get_method(message)
         if method == "GET":
             parameters_in = self.__get_route(message)
-            parameters = re.search("", parameters_in) #TODO: expresion regular para capturar parametros
-            if parameters is None:
-                return parameters
-            dicts = self.__parameters_to_dict(parameters.groups())
+            parameters = re.search("\?(.*)", parameters_in) #TODO: expresion regular para capturar parametros
+            parameters = parameters.groups()[0]
+            parameters = parameters.split("&")
+            dicts = self.__parameters_to_dict(parameters)
             return dicts
+        else:
+            parameters_in = re.findall("(\w+): (\w+)", message)
+            try:
+                return parameters_in
+            except Exception as e:
+                return e
         return []
             
     def __parameters_to_dict(self, parameters):
         
+        a = "^"
+
         result = {}
         for parameter in parameters:
-            name = re.search("(.*)=", parameter)
-            result_name = name.group()
-            value = re.search("=(.*)", parameter)
-            result_value = value.group()
+            name = re.search("(\w+)=", parameter)
+            result_name = name.groups()[0]
+            result_name.replace("=", "")
+            value = re.search("=(\w+)", parameter)
+            result_value = value.groups()[0]
+            result_value.replace("=", "")
 
             result[result_name] = result_value
 
@@ -104,7 +115,7 @@ class Parser(object):
 if __name__ == "__main__":
 
     messages = [
-        '''GET server.get.message?t=45&id=123 HTTP/1.1''', 
+        '''GET server.get.message?t=45&id=123&last_name=cacahuate HTTP/1.1''', 
         '''POST name HTTP/1.1''', 
         '''POST server.send.message HTTP/1.1
            t: 56
