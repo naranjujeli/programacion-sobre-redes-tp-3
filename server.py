@@ -15,15 +15,15 @@ def get_token():
 DIRECCION_IP = "127.0.0.1"
 PORT = 65432
 TOKEN = get_token()
-CHANNEL_ID = 10934545676603203311 ### Completar
+CHANNEL_ID = 1146923802664632453
 client = discord.Client(intents=discord.Intents.all())
 parser = Parser()
-BOT_NAME = 'Shaggy'   ### Completar
+BOT_NAME = 'Shaggy'
 
 
 
 async def send_response(conn, data):
-    data = parser.parse_request(data)
+    # data = parser.parse_request(data)
 
     if data['rute'] == 'nombre':
         conn.sendall(BOT_NAME.encode())
@@ -45,8 +45,8 @@ async def send_response(conn, data):
     else:
         conn.sendall(b'Ruta desconocida')
 
-def open_socket_to_connection():
-    # Abrir la coneccion al Cliente
+async def open_socket_to_connection():
+    # Abrir la conexión al Cliente
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((DIRECCION_IP, PORT))
         s.listen()
@@ -56,15 +56,15 @@ def open_socket_to_connection():
             while True:
                 data = connection.recv(1024)
                 decoded_data = data.decode('utf-8')
-
                 print("Mensaje recibido:", decoded_data)
                 connection.sendall("El mensaje fue recibido por el servidor".encode())
-        # await send_response(None, None)
+                await send_response(connection, {"rute": decoded_data})
 
 @client.event
 async def on_ready():
-    print('Bot conectado')
     await open_socket_to_connection()
+    print('Bot conectado')
+    await client.get_channel(CHANNEL_ID).send("Shaggy está en la casa")
 
 @client.event
 async def on_message(message):
@@ -73,7 +73,17 @@ async def on_message(message):
     if message.author == client.user: 
         return
     
-    ### Completar
     # Dependiendo del contenido del mensaje se va decidir que accion se hace
 
-client.run(TOKEN)
+    print(f"Recibido el mensaje: {message.content}")
+
+    if message.content == "hola":
+        message.channel.send("hola")
+
+
+
+def main():
+    client.run(TOKEN)
+
+if __name__ == "__main__":
+    main()
