@@ -15,10 +15,10 @@ def get_token():
 DIRECCION_IP = "127.0.0.1"
 PORT = 65432
 TOKEN = get_token()
-CHANNEL_ID = 1146923802664632453 ### Completar
+CHANNEL_ID = 1146923802664632453
 client = discord.Client(intents=discord.Intents.all())
 parser = Parser()
-BOT_NAME = 'Shaggy'   ### Completar
+BOT_NAME = 'Shaggy'
 
 
 
@@ -46,7 +46,7 @@ async def send_response(conn, data):
         conn.sendall(b'Ruta desconocida')
 
 def open_socket_to_connection():
-    # Abrir la coneccion al Cliente
+    # Abrir la conexión al Cliente
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((DIRECCION_IP, PORT))
         s.listen()
@@ -56,16 +56,15 @@ def open_socket_to_connection():
             while True:
                 data = connection.recv(1024)
                 decoded_data = data.decode('utf-8')
-
                 print("Mensaje recibido:", decoded_data)
                 connection.sendall("El mensaje fue recibido por el servidor".encode())
         # await send_response(None, None)
 
 @client.event
 async def on_ready():
+    await open_socket_to_connection()
     print('Bot conectado')
-    await client.get_channel(CHANNEL_ID).send("eeeaaaa")
-    # await open_socket_to_connection()
+    await client.get_channel(CHANNEL_ID).send("Shaggy está en la casa")
 
 @client.event
 async def on_message(message):
@@ -82,4 +81,9 @@ async def on_message(message):
         message.channel.send("hola")
 
 
-client.run(TOKEN)
+
+def main():
+    client.run(TOKEN)
+
+if __name__ == "__main__":
+    main()
