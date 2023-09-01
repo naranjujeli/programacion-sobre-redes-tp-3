@@ -15,8 +15,14 @@ class Parser(object):
         #   version:    version de HTTP parseada, en este caso, esta clase solo parsea version 1.1
         # p.parse_request('''GET server.get.message?t=45&id=123 HTTP/1.1''') -> {'method': 'GET', 'rute': 'server.send.message', 'parameters': {'t': 45, 'id': 123}, 'message': '', 'version': 1.1}
 
+        method = self.__get_method(message)
+        route = self.__get_route(message)
+        parameters = self.__get_parameters(message)
+        
+
+
         ### COMPLETAR
-        return {'method': '', 'rute': '', 'parameters': {}, 'message': '', 'version': 0.0}
+        return {'method': method, 'rute': route, 'parameters': parameters, 'message': '', 'version': 0.0}
     
     def parse_response(self, message):
         # Este metodo parsea el string de un response en formato HTTP V1.1 y devuelve un objeto donde se indica:
@@ -29,23 +35,6 @@ class Parser(object):
         ### COMPLETAR
         return {'status_code': 000, 'status': '', 'parameters': {}, 'message': '', 'version': 0.0}
     
-
-    def first_validation(self, message):
-
-        result = message.split("\n")
-
-        return result
-    
-    def second_validation(self, message):
-        
-        result = []
-        for part in message:
-            new = self.without_spaces_in_the_begining(part)
-            if new == "":
-                continue
-            result.append(new)
-        return result
-    
     def __spaces(self, message):
         
         space_separated = r'(\S+)'
@@ -54,28 +43,27 @@ class Parser(object):
 
     def __get_method(self, message):
         
-        method = re.search("(POST|GET|PUT|DELETE)", message)
+        method = re.search("([^\s]*)\s", message)
         result = method.groups()
         return result[0]
 
     def __get_route(self, message):
         
-        rute = re.search("[^\s]*\s([^\?\s]*)", message)
+        rute = re.search("[^\s]*(.*)[\s\?]", message)
         result = rute.groups()
         return result[0]
 
-    def __get_parameters(self, message):
-        
-        terms = self.__spaces(message)
+    def get_parameters(self, message):
 
-        for term in terms:
-            partitions = term.partition("?")
-            try:
-                index = partitions.index("?")
-                parameters = partitions[index+1].split("&")
+        method = self.__get_method(message)
+        if method == "GET":
+            parameters_in = self.__get_route(message)
+            parameters = re.search("", parameters_in) #TODO: expresion regular para capturar parametros
+            if parameters is None:
                 return parameters
-            except Exception as e:
-                return []
+            dicts = self.__parameters_to_dict(parameters.groups())
+            return dicts
+        return []
             
     def __parameters_to_dict(self, parameters):
         
@@ -92,8 +80,7 @@ class Parser(object):
     
     def without_spaces_in_the_begining(self, text):
         
-        result = re.search("\s+(.*)", text)
-        return result.groups()[0]
+       return text.strip()
 
 
     
@@ -119,24 +106,18 @@ if __name__ == "__main__":
     messages = [
         '''GET server.get.message?t=45&id=123 HTTP/1.1''', 
         '''POST name HTTP/1.1''', 
-        '''HTTP/1.1 200 OK''', 
         '''POST server.send.message HTTP/1.1
            t: 56
            id: 123
  
            Hola, este es el cuerpo del request.''',
-        '''HTTP/1.1 404 Not Found
-                     id: 123
-  
-                     No se encontro el id 123'''
+                     '''POST name HTTP/1.1''',
+                     '''GET server.get.message?t=45&id=123 HTTP/1.1'''
    ]
-    
-    mensaje = [messages[0]]
-    
+
     p = Parser()
     for message in messages:
-        result = p.first_validation(message)
-        result = p.second_validation(result)
-        print(result)
+        parameters = p.get_parameters(message)
+        print(parameters)
 
     
