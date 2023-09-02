@@ -18,7 +18,7 @@ class Parser(object):
         method = self.__get_method(message)
         route = self.__get_route(message)
         parameters = self.__get_parameters(message)
-        specific_message = self.__get_message(message)
+        specific_message = self.__get_body(message)
         
 
 
@@ -35,12 +35,6 @@ class Parser(object):
 
         ### COMPLETAR
         return {'status_code': 000, 'status': '', 'parameters': {}, 'message': '', 'version': 0.0}
-    
-    def __spaces(self, message):
-        
-        space_separated = r'(\S+)'
-        results = re.findall(space_separated, message)
-        return results
 
     def __get_method(self, message):
         
@@ -50,11 +44,11 @@ class Parser(object):
 
     def __get_route(self, message):
         
-        rute = re.search("[^\s]*(.*)[\s\?]", message)
+        rute = re.search("[^\s]* (.*)[\s\?]", message)
         result = rute.groups()
         return result[0]
 
-    def get_parameters(self, message):
+    def __get_parameters(self, message):
 
         method = self.__get_method(message)
         if method == "GET":
@@ -64,13 +58,20 @@ class Parser(object):
             parameters = parameters.split("&")
             dicts = self.__parameters_to_dict(parameters)
             return dicts
-        else:
-            parameters_in = re.findall("(\w+): (\w+)", message)
-            try:
-                return parameters_in
-            except Exception as e:
-                return e
-        return []
+        parameters_in = re.findall("(\w+): (\w+)", message)
+        parameters = {}
+        for parameter in parameters_in:
+            parameters[parameter[0]] = parameter[1]
+        return parameters
+    
+    def __get_body(self, message):
+        
+        body = re.search("\n\s+\n(.*)", message)
+        try:
+            result = body.group()
+            return result.strip()
+        except:
+            return ""
             
     def __parameters_to_dict(self, parameters):
         
@@ -88,14 +89,6 @@ class Parser(object):
             result[result_name] = result_value
 
         return result
-    
-    def without_spaces_in_the_begining(self, text):
-        
-       return text.strip()
-
-
-    
-
 
 # para testear pueden usar los siguientes test:
 
@@ -128,7 +121,8 @@ if __name__ == "__main__":
 
     p = Parser()
     for message in messages:
-        parameters = p.get_parameters(message)
+        parameters = p.parse_request(message)
         print(parameters)
+        print("-------------------")
 
     
