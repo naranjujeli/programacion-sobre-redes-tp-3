@@ -59,7 +59,7 @@ def obtener_todos_los_codigos():
         codigos.append(data["paises"][pais]["code"])
     return codigos
 
-def obetener_pais_random():
+def obtener_pais_random():
 
     data = open_data(data_file)
     paises = data["paises"]
@@ -67,5 +67,5 @@ def obetener_pais_random():
 
 if __name__ == "__main__":
 
-    result = obetener_pais_random()
+    result = obtener_pais_random()
     print(result)
