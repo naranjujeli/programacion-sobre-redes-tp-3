@@ -12,8 +12,7 @@ def enviar_mensaje(s, mensaje):
     s.sendall(f"mandar_mensaje {mensaje}".encode())
 
 def leer_mensaje(s):
-    # TODO
-    pass
+    s.sendall("leer_mensaje".encode())
 
 def acceso_base_de_datos(s, acceso):
     # TODO
@@ -23,8 +22,6 @@ def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((DESTINATION_IP_ADDRESS, DESTINATION_PORT))
         s.sendall("All ready".encode())
-        data = s.recv(1024)
-        print("Response from the server:", data.decode())
 
         action = -1
         while action != 0:

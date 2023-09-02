@@ -36,8 +36,14 @@ async def send_response(conn, data):
         await channel.send(f"Nuevo mensaje: {mensaje}")
 
     elif data['rute'] == 'leer_mensaje':
-        print('obtiene el ultimo mensaje del chat')
-        ### Completar
+        channel = client.get_channel(CHANNEL_ID)
+        
+        ultimo_mensaje_del_chat = None
+        historial = channel.history(limit=1)
+        async for mensaje in historial:
+            ultimo_mensaje_del_chat = mensaje.content
+        conn.sendall(ultimo_mensaje_del_chat.encode())
+        await channel.send(f"El último mensaje del chat es: {ultimo_mensaje_del_chat}")
     
     elif data['rute'] == 'acceso_base_de_datos':
         print('accede a la base de datos')
