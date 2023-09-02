@@ -20,9 +20,6 @@ class Parser(object):
         parameters = self.__get_parameters(message)
         specific_message = self.__get_body(message)
         
-
-
-        ### COMPLETAR
         return {'method': method, 'rute': route, 'parameters': parameters, 'message': specific_message, 'version': 1.1}
     
     def parse_response(self, message):
@@ -33,8 +30,12 @@ class Parser(object):
         #   message:     string con el mensaje del request
         #   version:     version de HTTP parseada, en este caso, esta clase solo parsea version 1.1
 
-        ### COMPLETAR
-        return {'status_code': 000, 'status': '', 'parameters': {}, 'message': '', 'version': 0.0}
+        status_code = self.__get_status_code(message)
+        status = self.__get_status(message)
+        parameters = self.__get_parameters(message)
+        body = self.__get_body(message)
+
+        return {'status_code': status_code, 'status': status, 'parameters': parameters, 'message': body, 'version': 1.1}
 
     def __get_method(self, message):
         
@@ -72,6 +73,21 @@ class Parser(object):
             return result.strip()
         except:
             return ""
+        
+    def __get_status_code(self, message):
+
+        status_code= re.search("(\d\d\d)", message)
+        return status_code.group()
+    
+    def __get_status(self, message):
+
+        n = "^"
+        a = "\d\d\d (.*)"
+        status = re.search(a, message)
+        try:
+            return status.groups()[0]
+        except Exception as e:
+            return e
             
     def __parameters_to_dict(self, parameters):
         
@@ -108,20 +124,16 @@ class Parser(object):
 if __name__ == "__main__":
 
     messages = [
-        '''GET server.get.message?t=45&id=123&last_name=cacahuate HTTP/1.1''', 
-        '''POST name HTTP/1.1''', 
-        '''POST server.send.message HTTP/1.1
-           t: 56
-           id: 123
- 
-           Hola, este es el cuerpo del request.''',
-                     '''POST name HTTP/1.1''',
-                     '''GET server.get.message?t=45&id=123 HTTP/1.1'''
+        '''HTTP/1.1 200 OK''',
+        '''HTTP/1.1 404 Not Found
+                     id: 123
+  
+                     No se encontro el id 123'''
    ]
 
     p = Parser()
     for message in messages:
-        parameters = p.parse_request(message)
+        parameters = p.parse_response(message)
         print(parameters)
         print("-------------------")
 
