@@ -30,9 +30,10 @@ async def send_response(conn, data):
         channel = client.get_channel(CHANNEL_ID)
         await channel.send(f"Mi nombre es: {BOT_NAME}")
 
-    elif data['rute'] == 'mandar_mensaje':
-        print('envia mensaje al canal de texto')
-        ### Completar
+    elif data['rute'][:14] == 'mandar_mensaje':
+        mensaje = data['rute'][15:]
+        channel = client.get_channel(CHANNEL_ID)
+        await channel.send(f"Nuevo mensaje: {mensaje}")
 
     elif data['rute'] == 'leer_mensaje':
         print('obtiene el ultimo mensaje del chat')

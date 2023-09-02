@@ -9,8 +9,7 @@ def obtener_nombre(s):
     s.sendall("nombre".encode())
 
 def enviar_mensaje(s, mensaje):
-    # TODO
-    pass
+    s.sendall(f"mandar_mensaje {mensaje}".encode())
 
 def leer_mensaje(s):
     # TODO
@@ -42,7 +41,8 @@ def main():
                 obtener_nombre(s)
 
             elif action == 2:
-                enviar_mensaje(s, '')
+                mensaje = input("Y el mensaje, capo? ")
+                enviar_mensaje(s, mensaje)
 
             elif action == 3:
                 leer_mensaje(s)
