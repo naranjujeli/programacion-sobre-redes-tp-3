@@ -37,6 +37,19 @@ class Parser(object):
 
         return {'status_code': status_code, 'status': status, 'parameters': parameters, 'message': body, 'version': 1.1}
 
+    def __format_request_parameters(self, parameters:dict):
+        formatted_parameters = ""
+        for i in range(len(parameters.keys())):
+            formatted_parameters += ("?" if i==0 else "&") + parameters.keys()[i] + "=" + parameters.values()[i]
+        return formatted_parameters
+
+    def format_request(self, body, method, route, parameters:dict):
+        formatted_parameters = self.__format_request_parameters(parameters)
+        return f"{method} {route}{formatted_parameters} HTTP/1.1\n\n{body}"
+    
+    def format_response(self, message, status=""):
+        return f"HTTP/1.1 {status}\n\n{message}"
+
     def __get_method(self, message):
         
         method = re.search("([^\s]*)\s", message)

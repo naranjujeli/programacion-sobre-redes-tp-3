@@ -12,72 +12,83 @@ def get_token():
     with open('TOKEN', 'r') as file:
         return file.readline()
 
-DIRECCION_IP = "127.0.0.1"
+IP_ADDRESS = "127.0.0.1"
 PORT = 65432
 TOKEN = get_token()
 CHANNEL_ID = 1146923802664632453
-client = discord.Client(intents=discord.Intents.all())
+discord_client = discord.Client(intents=discord.Intents.all())
+discord_main_channel = None
 parser = Parser()
 BOT_NAME = 'Shaggy'
 
+def get_channel_reference():
+    discord_client.get_channel(CHANNEL_ID)
 
+async def resolve_request(conn, data_from_client):
+    # data_from_client = parser.parse_request(data_from_client)
 
-async def send_response(conn, data):
-    # data = parser.parse_request(data)
-
-    if data['rute'] == 'nombre':
+    if data_from_client['route'] == 'nombre':
         conn.sendall(BOT_NAME.encode())
-        channel = client.get_channel(CHANNEL_ID)
-        await channel.send(f"Mi nombre es: {BOT_NAME}")
+        discord_main_channel = discord_client.get_channel(CHANNEL_ID)
+        await discord_main_channel.send(f"Mi nombre es: {BOT_NAME}")
 
-    elif data['rute'][:14] == 'mandar_mensaje':
-        mensaje = data['rute'][15:]
-        channel = client.get_channel(CHANNEL_ID)
-        await channel.send(f"Nuevo mensaje: {mensaje}")
+    elif data_from_client['route'][:14] == 'mandar_mensaje':
+        mensaje = data_from_client['route'][15:]
+        discord_main_channel = discord_client.get_channel(CHANNEL_ID)
+        await discord_main_channel.send(f"Nuevo mensaje: {mensaje}")
 
-    elif data['rute'] == 'leer_mensaje':
-        channel = client.get_channel(CHANNEL_ID)
+    elif data_from_client['route'] == 'leer_mensaje':
+        discord_main_channel = discord_client.get_channel(CHANNEL_ID)
         
         ultimo_mensaje_del_chat = None
-        historial = channel.history(limit=1)
+        historial = discord_main_channel.history(limit=1)
         async for mensaje in historial:
             ultimo_mensaje_del_chat = mensaje.content
         conn.sendall(ultimo_mensaje_del_chat.encode())
-        await channel.send(f"El último mensaje del chat es: {ultimo_mensaje_del_chat}")
+        await discord_main_channel.send(f"El último mensaje del chat es: {ultimo_mensaje_del_chat}")
     
-    elif data['rute'] == 'acceso_base_de_datos':
+    elif data_from_client['route'] == 'acceso_base_de_datos':
         print('accede a la base de datos')
         ### Completar
 
     else:
         conn.sendall(b'Ruta desconocida')
 
-async def open_socket_to_connection():
+async def open_connection_to_client():
     # Abrir la conexión al Cliente
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind((DIRECCION_IP, PORT))
-        s.listen()
-        connection, address = s.accept()
-        with connection:
-            print("Conectando a", address)
-            while True:
-                data = connection.recv(1024)
-                decoded_data = data.decode('utf-8')
-                print("Mensaje recibido:", decoded_data)
-                connection.sendall("El mensaje fue recibido por el servidor".encode())
-                await send_response(connection, {"rute": decoded_data})
+    socket_to_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socket_to_client.bind((IP_ADDRESS, PORT))
+    socket_to_client.listen()
+    connection, address = socket_to_client.accept()
+    print("Conectando a", address)
+    return connection
 
-@client.event
+async def listen_to_connection(connection):
+    while True:
+        try:
+            data_from_client = connection.recv(1024)
+            decoded_data = data_from_client.decode('utf-8')
+            print("Mensaje recibido:", decoded_data)
+
+            await resolve_request(connection, parser.parse_request(decoded_data))
+        except BrokenPipeError:
+            return None
+
+@discord_client.event
 async def on_ready():
-    await open_socket_to_connection()
-    print('Bot conectado')
-    await client.get_channel(CHANNEL_ID).send("Shaggy está en la casa")
+    connection_to_client = await open_connection_to_client()
+    print('El bot está on-line')
+    get_channel_reference()
+    await discord_main_channel.send("Shaggy está en la casa")
+    await listen_to_connection(connection_to_client)
+    await discord_client.close()
+    print('El bot fue apagado')
 
-@client.event
+@discord_client.event
 async def on_message(message):
 
     # Hay que chequear que el bot ignore sus propios mensajes, sino se puede crear un loop infinito
-    if message.author == client.user: 
+    if message.author == discord_client.user: 
         return
     
     # Dependiendo del contenido del mensaje se va decidir que accion se hace
@@ -85,12 +96,12 @@ async def on_message(message):
     print(f"Recibido el mensaje: {message.content}")
 
     if message.content == "hola":
-        message.channel.send("hola")
+        message.discord_main_channel.send("hola")
 
 
 
 def main():
-    client.run(TOKEN)
+    discord_client.run(TOKEN)
 
 if __name__ == "__main__":
     main()
