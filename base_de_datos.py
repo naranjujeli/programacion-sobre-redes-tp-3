@@ -6,6 +6,7 @@
 
 import json
 import random
+import re
 
 
 
@@ -63,9 +64,87 @@ def obtener_pais_random():
 
     data = open_data(data_file)
     paises = data["paises"]
-    return random.choice(paises)
+    return random.choice(list(paises.keys()))
+
+def obtener_lista_de_paises_random(cantidad):
+
+    resultado = []
+    contador = 0
+    while contador < cantidad:
+        nuevo_pais = obtener_pais_random()
+        if nuevo_pais not in resultado:
+            resultado.append(nuevo_pais)
+            contador+=1
+    return resultado
+
+def obtener_todos_los_paises_empezados_por(inicio):
+    
+    data = open_data(data_file)
+    paises = data["paises"]
+    paises = list(paises.keys())
+    filtro = f"^{inicio}"
+    resultado = []
+
+    for pais in paises:
+        bandera = re.search(filtro, pais)
+        if bandera:
+            resultado.append(pais)
+    return resultado
+
+def obtener_todos_los_paises_terminados_en(final):
+
+    data = open_data(data_file)
+    paises = data["paises"]
+    paises = list(paises.keys())
+    filtro = f"{final}$"
+    resultado = []
+
+    for pais in paises:
+        bandera = re.search(filtro, pais)
+        if bandera:
+            resultado.append(pais)
+    return resultado
+
+def obtener_todos_los_paises_que_contienen_a(frase):
+
+    data = open_data(data_file)
+    paises = data["paises"]
+    paises = list(paises.keys())
+    filtro = f"{frase}"
+    resultado = []
+
+    for pais in paises:
+        bandera = re.search(filtro, pais)
+        if bandera:
+            resultado.append(pais)
+    return resultado
+
+def obtener_todos_los_paises_que_tengan_tal_cantidad_de_letras_en_su_nombre(cantidad):
+
+    data = open_data(data_file)
+    paises = data["paises"]
+    paises = list(paises.keys())
+    resultado = []
+
+    for pais in paises:
+        if len(pais) == cantidad:
+            resultado.append(pais)
+    return resultado
+
+def obtener_palabra_de_todos_los_paises_juntos_sin_espacios():
+
+    data = open_data(data_file)
+    paises = data["paises"]
+    paises = list(paises.keys())
+    resultado = ""
+
+    for pais in paises:
+        resultado += pais
+    return resultado.replace(" ", "")
+
+
 
 if __name__ == "__main__":
 
-    result = obtener_pais_random()
+    result = obtener_palabra_de_todos_los_paises_juntos_sin_espacios()
     print(result)
