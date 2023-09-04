@@ -9,18 +9,18 @@ class Parser(object):
     def parse_request(self, message):
         # Este metodo parsea el string de un request en formato HTTP V1.1 y devuelve un objeto donde se indica:
         #   method:     string que indica el metodo usado (puede ser POST, GET, DELETE, UPDATE, etc)
-        #   rute:       string con la url solicitada por el mensage a parsear
+        #   route:       string con la url solicitada por el mensage a parsear
         #   parameters: diccionario con los nombre y valores de los parametros pasados en el request
         #   message:    string con el mensaje del request
         #   version:    version de HTTP parseada, en este caso, esta clase solo parsea version 1.1
-        # p.parse_request('''GET server.get.message?t=45&id=123 HTTP/1.1''') -> {'method': 'GET', 'rute': 'server.send.message', 'parameters': {'t': 45, 'id': 123}, 'message': '', 'version': 1.1}
+        # p.parse_request('''GET server.get.message?t=45&id=123 HTTP/1.1''') -> {'method': 'GET', 'route': 'server.send.message', 'parameters': {'t': 45, 'id': 123}, 'message': '', 'version': 1.1}
 
         method = self.__get_method(message)
         route = self.__get_route(message)
         parameters = self.__get_parameters(message)
-        specific_message = self.__get_body(message)
+        body = self.__get_body(message)
         
-        return {'method': method, 'route': route, 'parameters': parameters, 'message': specific_message, 'version': 1.1}
+        return {'method': method, 'route': route, 'parameters': parameters, 'body': body, 'version': 1.1}
     
     def parse_response(self, message):
         # Este metodo parsea el string de un response en formato HTTP V1.1 y devuelve un objeto donde se indica:
@@ -58,29 +58,32 @@ class Parser(object):
 
     def __get_route(self, message):
         
-        rute = re.search("[^\s]* (.*)[\s\?]", message)
-        result = rute.groups()
+        route = re.search("^\w+ (\w+(\?.+)?) HTTP/1.1", message)
+        result = route.groups()
         return result[0]
 
     def __get_parameters(self, message):
 
         method = self.__get_method(message)
-        if method == "GET":
-            parameters_in = self.__get_route(message)
-            parameters = re.search("\?(.*)", parameters_in)
-            parameters = parameters.groups()[0]
-            parameters = parameters.split("&")
-            dicts = self.__parameters_to_dict(parameters)
-            return dicts
-        parameters_in = re.findall("(\w+): (\w+)", message)
-        parameters = {}
-        for parameter in parameters_in:
-            parameters[parameter[0]] = parameter[1]
-        return parameters
+        try:
+            if method == "GET":
+                parameters_in = self.__get_route(message)
+                parameters = re.search("\?(.*)", parameters_in)
+                parameters = parameters.groups()[0]
+                parameters = parameters.split("&")
+                dicts = self.__parameters_to_dict(parameters)
+                return dicts
+            parameters_in = re.findall("(\w+): (\w+)", message)
+            parameters = {}
+            for parameter in parameters_in:
+                parameters[parameter[0]] = parameter[1]
+            return parameters
+        except AttributeError:
+            return {}
     
     def __get_body(self, message):
         
-        body = re.search("\n\s+\n(.*)", message)
+        body = re.search(".+\n\n(.*)", message)
         try:
             result = body.group()
             return result.strip()
@@ -121,12 +124,12 @@ class Parser(object):
 
 # para testear pueden usar los siguientes test:
 
-# p.parse_request('''POST name HTTP/1.1''')                          -> {'method': 'POST', 'rute': 'name', 'parameters': {}, 'message': '', 'version': 1.1}
+# p.parse_request('''POST name HTTP/1.1''')                          -> {'method': 'POST', 'route': 'name', 'parameters': {}, 'message': '', 'version': 1.1}
 # p.parse_request('''POST server.send.message HTTP/1.1
 #                    t: 56
 #                    id: 123
 # 
-#                    Hola, este es el cuerpo del request.''')         -> {'method': 'POST', 'rute': 'server.send.message', 'parameters': {'t': 56, 'id': 123}, 'message': 'Hola, este es el cuerpo del request.', 'version': 1.1}
+#                    Hola, este es el cuerpo del request.''')         -> {'method': 'POST', 'route': 'server.send.message', 'parameters': {'t': 56, 'id': 123}, 'message': 'Hola, este es el cuerpo del request.', 'version': 1.1}
 
 # p.parse_response('''HTTP/1.1 200 OK''')          -> {'status_code': 200, 'status': 'OK', 'parameters': {}, 'message': '', 'version': 1.1}
 # p.parse_response('''HTTP/1.1 404 Not Found

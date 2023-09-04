@@ -18,28 +18,22 @@ PORT = 65432
 TOKEN = get_token()
 CHANNEL_ID = 1146923802664632453
 discord_client = discord.Client(intents=discord.Intents.all())
-discord_main_channel = None
 database_access = DatabaseAccess()
 parser = Parser()
 BOT_NAME = 'Shaggy'
-
-def get_channel_reference():
-    pass
-
-async def send_through_chat(ds_message):
-    await discord_main_channel.send(ds_message)
 
 def send_through_socket(connection, message, status="200 OK"):
     connection.sendall(parser.format_response(message, status).encode())
 
 async def resolve_request(connection, data_from_client):
+    discord_main_channel = discord_client.get_channel(CHANNEL_ID)
     if data_from_client['route'] == 'nombre':
-        await send_through_chat(f"Mi nombre es: {BOT_NAME}")
+        await discord_main_channel.send(f"Mi nombre es: {BOT_NAME}")
         send_through_socket(connection, BOT_NAME)
     elif data_from_client['route'] == 'mandar_mensaje':
         message = data_from_client['body']
 
-        await send_through_chat(f"Nuevo mensaje: {message}")
+        await discord_main_channel.send(f"Nuevo mensaje: {message}")
         send_through_socket(connection, f"Mensaje enviado: {message}")
     elif data_from_client['route'] == 'leer_mensaje':
         last_message_in_chat = None
@@ -47,7 +41,7 @@ async def resolve_request(connection, data_from_client):
         async for message in messages_history: # sí, es un "async for", ni idea
             last_message_in_chat = message.content
         
-        await send_through_chat(f"El último mensaje del chat es: {last_message_in_chat}")
+        await discord_main_channel.send(f"El último mensaje del chat es: {last_message_in_chat}")
         send_through_socket(connection, last_message_in_chat)
     elif data_from_client['route'] == 'acceso_base_de_datos':
         try:
@@ -115,8 +109,6 @@ async def listen_to_connection(connection):
 async def on_ready():
     connection_to_client = await open_connection_to_client()
     print('El bot está on-line')
-    discord_main_channel = discord_client.get_channel(CHANNEL_ID)
-    await discord_main_channel.send("Shaggy está en la casa")
     await listen_to_connection(connection_to_client)
     await discord_client.close()
     print('El bot fue apagado')
