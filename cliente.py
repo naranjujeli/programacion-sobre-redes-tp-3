@@ -19,7 +19,7 @@ def send_message(socket_to_server, mensaje):
 def read_message(socket_to_server):
     send_through_socket(parser.format_request(body="", method="GET", route="leer_mensaje", parameters={}), socket_to_server)
 
-def database_access(socket_to_server, option, arg):
+def database_access(socket_to_server, option, arg="0"):
     send_through_socket(parser.format_request(body="", method="GET", route="acceso_base_de_datos", parameters={"option": option, "arg": arg}), socket_to_server)
 
 def main():
@@ -43,7 +43,11 @@ def main():
             while not option in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]:
                 print('Elija una opción:\n1 = Obtener todos los paises y sus códigos\n2 = Obtener todos los países\n3 = Obtener todos los códigos\n4 = Obtener un código según su país\n5 = Obtener un país según su código\n6 = Obtener país aleatorio\n7 = Obtener lista aleatoria de países\n8 = Obtener países según inicial\n9 = Obtener países según última letra\n10 = Obtener países conteniendo una palabra\n11 = Obtener países de N letras\n12 = Obtener todos los países en una palabra')
                 option = input()
-            database_access(socket_to_server, option)
+                if option in [4, 5, 8, 9, 10, 11]:
+                    arg = input()
+                    database_access(socket_to_server, option, arg)
+                else:
+                    database_access(socket_to_server, option)
         elif action != "0":
             print('Error, accion no valida.\n\n\n')
 

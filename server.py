@@ -50,37 +50,59 @@ async def resolve_request(connection, data_from_client):
                 all_data = database_access.get_all()["countries"]
                 result = ""
                 for i in range(len(all_data.keys())):
-                    result += all_data.keys()[i] + " " + all_data.values()[i] + "\n"
+                    result += list(all_data.keys())[i] + " " + list(all_data.values())[i] + "\n"
+                discord_main_channel.send(result)
                 send_through_socket(connection, result)
             elif option == "2": # Países
                 result = ""
                 for country in database_access.get_all_countries():
                     result += country + "\n"
+                discord_main_channel.send(result)
                 send_through_socket(connection, result)
             elif option == "3": # Códigos
                 result = ""
                 for code in database_access.get_all_codes():
                     result += code + "\n"
-                send_through_socket(connection)
+                discord_main_channel.send(result)
+                send_through_socket(connection, result)
             elif option == "4": # Código según país
-                send_through_socket(connection, database_access.get_code_by_country(data_from_client["parameters"]["arg"]))
+                result = database_access.get_code_by_country(data_from_client["parameters"]["arg"])
+                discord_main_channel.send(result)
+                send_through_socket(connection, result)
             elif option == "5": # País según código
-                send_through_socket(connection, database_access.get_country_by_code(data_from_client["parameters"]["arg"]))
+                result = database_access.get_country_by_code(data_from_client["parameters"]["arg"])
+                discord_main_channel.send(result)
+                send_through_socket(connection, result)
             elif option == "6": # País aleatorio
-                send_through_socket(connection, database_access.get_random_country())
+                result = database_access.get_random_country()
+                discord_main_channel.send(result)
+                send_through_socket(connection, result)
             elif option == "7": # Lista aleatoria de países
-                send_through_socket(connection, database_access.get_random_countries())
+                result = database_access.get_random_countries()
+                discord_main_channel.send(result)
+                send_through_socket(connection, result)
             elif option == "8": # Países por inicial
-                send_through_socket(connection, database_access.get_all_countries_begginning_with(data_from_client["parameters"]["arg"]))
+                result = database_access.get_all_countries_begginning_with(data_from_client["parameters"]["arg"])
+                discord_main_channel.send(result)
+                send_through_socket(connection)
             elif option == "9": # Países por última letra
-                send_through_socket(connection, database_access.get_all_countries_ending_with(data_from_client["parameters"]["arg"]))
+                result = database_access.get_all_countries_ending_with(data_from_client["parameters"]["arg"])
+                discord_main_channel.send(result)
+                send_through_socket(connection, result)
             elif option == "10": # Países que contienen...
-                send_through_socket(connection, database_access.get_all_countries_containing(data_from_client["parameters"]["arg"]))
+                result = database_access.get_all_countries_containing(data_from_client["parameters"]["arg"])
+                discord_main_channel.send(result)
+                send_through_socket(connection)
             elif option == "11": # Países con N letras
-                send_through_socket(connection, database_access.get_all_countries_with_n_letters(data_from_client["parameters"]["arg"]))
+                result = database_access.get_all_countries_with_n_letters(data_from_client["parameters"]["arg"])
+                discord_main_channel.send(result)
+                send_through_socket(connection)
             elif option == "12": # Paísestodojunto
-                send_through_socket(connection, database_access.get_all_countries_together())
+                result = database_access.get_all_countries_together()
+                discord_main_channel.send(result)
+                send_through_socket(connection)
         except:
+            discord_main_channel.send("Ha sucedido un error al acceder a la base de datos")
             send_through_socket(connection, "Ha sucedido un error al acceder a la base de datos", "500 Internal Server Error")
     else:
         send_through_socket(connection, 'Ruta desconocida', "404 Not Found")
