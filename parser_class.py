@@ -67,8 +67,8 @@ class Parser(object):
         method = self.__get_method(message)
         try:
             if method == "GET":
-                parameters_in = self.__get_route(message)
-                parameters = re.search("\?(.*)", parameters_in)
+
+                parameters = re.search("^GET \w+\?(.*) HTTP\/1.1$", message)
                 parameters = parameters.groups()[0]
                 parameters = parameters.split("&")
                 dicts = self.__parameters_to_dict(parameters)
@@ -78,7 +78,8 @@ class Parser(object):
             for parameter in parameters_in:
                 parameters[parameter[0]] = parameter[1]
             return parameters
-        except AttributeError:
+        except AttributeError as e:
+            print(e)
             return {}
     
     def __get_body(self, message):
