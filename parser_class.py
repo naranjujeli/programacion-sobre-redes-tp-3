@@ -40,7 +40,7 @@ class Parser(object):
     def __format_request_parameters(self, parameters:dict):
         formatted_parameters = ""
         for i in range(len(parameters.keys())):
-            formatted_parameters += ("?" if i==0 else "&") + parameters.keys()[i] + "=" + parameters.values()[i]
+            formatted_parameters += ("?" if i==0 else "&") + list(parameters.keys())[i] + "=" + list(parameters.values())[i]
         return formatted_parameters
 
     def format_request(self, body, method, route, parameters:dict):
@@ -58,7 +58,7 @@ class Parser(object):
 
     def __get_route(self, message):
         
-        route = re.search("^\w+ (\w+(\?.+)?) HTTP/1.1", message)
+        route = re.search("^\w+ (\w+)(\?.+)? HTTP/1.1", message)
         result = route.groups()
         return result[0]
 
