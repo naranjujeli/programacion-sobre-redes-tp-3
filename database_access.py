@@ -66,6 +66,7 @@ class DatabaseAccess:
     def get_random_countries(self, quantity):
         result = []
         count = 0
+        quantity = int(quantity)
         while count < quantity:
             new_country = self.get_random_country()
             if new_country not in result:
@@ -137,6 +138,32 @@ class DatabaseAccess:
         for country in countries:
             result += country
         return result.replace(" ", "")
+    
+class EntradaConArgumento:
+
+    def __init__(self, entrada):
+
+        self.__entrada = entrada
+
+    def __eq__(self, other):
+        return other == self.__entrada
+
+    @property
+    def entrada(self):
+        return self.__entrada
+    
+    @property
+    def comando(self):
+        return self.entrada.split(" ")[0]
+    
+    @property
+    def number_of_arguments(self):
+        return len(self.__entrada.split(" ")) - 1 
+    
+    def argumento(self, n=0):
+
+        command = self.__entrada.split(" ")
+        return command[n+1]
 
 if __name__ == "__main__":
     database_access = DatabaseAccess()
