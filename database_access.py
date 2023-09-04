@@ -147,6 +147,9 @@ class EntradaConArgumento:
 
     def __eq__(self, other):
         return other == self.__entrada
+    
+    def __str__(self):
+        return self.__entrada
 
     @property
     def entrada(self):
@@ -167,5 +170,5 @@ class EntradaConArgumento:
 
 if __name__ == "__main__":
     database_access = DatabaseAccess()
-    result = database_access.get_all_countries_together()
+    result = database_access.get_all_countries_with_n_letters(5)
     print(result)

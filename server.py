@@ -133,15 +133,15 @@ async def listen_to_connection(connection):
 
 @discord_client.event
 async def on_ready():
-    connection_to_client = await open_connection_to_client()
-    print('El bot está on-line')
-    await listen_to_connection(connection_to_client)
-    await discord_client.close()
-    print('El bot fue apagado')
+    # connection_to_client = await open_connection_to_client()
+    # print('El bot está on-line')
+    # await listen_to_connection(connection_to_client)
+    # await discord_client.close()
+    # print('El bot fue apagado')
+    pass
 
 @discord_client.event
 async def on_message(message):
-
     # Hay que chequear que el bot ignore sus propios mensajes, sino se puede crear un loop infinito
     if message.author == discord_client.user: 
         return
@@ -151,6 +151,7 @@ async def on_message(message):
     print(f"Recibido el mensaje: {message.content}")
 
     entry = EntradaConArgumento(message.content)
+    print("El bot recibió:", entry)
     help_menu = '''Todos los comandos empiezan con un /
     >name --> devovlera el nombre del bot
     >all_countries --> devolvera todos los paises de la base de datos
@@ -163,9 +164,11 @@ async def on_message(message):
     >country_by_ending (frase) --> devolvera todos los paises que terminen con esa frase
     >countries_containing (frase) --> delvovera todos los paises que contengan esa frase
     >random_list_of_countries (cantidad) --> devolver una lista con paises random del tamaño de la cantidad asignada
-    >countries_with_n_letter (cantidad) --> devolvera todos los paises con tal cantidad de letras en su nombre
+    >countries_with_n_letters (cantidad) --> devolvera todos los paises con tal cantidad de letras en su nombre
     '''
 
+    result = None
+    
     if entry == "/hola":
         result = "hola"
     elif entry == "/name":
@@ -196,8 +199,8 @@ async def on_message(message):
         elif entry.comando == "/countries_containing":
             result = database_access.get_all_countries_containing(entry.argumento())
         elif entry.comando == "/countries_with_n_letters":
-            result = database_access.get_all_countries_with_n_letters(entry.argumento())
-    message.channel.send(result)
+            result = database_access.get_all_countries_with_n_letters(int(entry.argumento()))
+    await message.channel.send(result)
 
 
 
