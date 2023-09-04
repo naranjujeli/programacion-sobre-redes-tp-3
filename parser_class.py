@@ -20,7 +20,7 @@ class Parser(object):
         parameters = self.__get_parameters(message)
         specific_message = self.__get_body(message)
         
-        return {'method': method, 'rute': route, 'parameters': parameters, 'message': specific_message, 'version': 1.1}
+        return {'method': method, 'route': route, 'parameters': parameters, 'message': specific_message, 'version': 1.1}
     
     def parse_response(self, message):
         # Este metodo parsea el string de un response en formato HTTP V1.1 y devuelve un objeto donde se indica:
