@@ -146,8 +146,21 @@ async def on_message(message):
 
     print(f"Recibido el mensaje: {message.content}")
 
-    if message.content == "hola":
-        discord_main_channel.send("hola")
+    if message.content == "/hola":
+        result = "hola"
+    elif message.content == "/name":
+        result = BOT_NAME
+    elif message.content == "/all_conutrys":
+        result = database_access.get_all_countries()
+    elif message.content == "/all_database":
+        result = database_access.get_all()
+    elif message.content == "/all_codes":
+        result = database_access.get_all_codes()
+    elif message.content == "/random_country":
+        result = database_access.get_random_country()
+    elif message.content == "/all_countrys_combined":
+        result = database_access.get_all_countries_together()
+    message.chat.send(result)
 
 
 
