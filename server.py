@@ -6,6 +6,7 @@ import socket
 import discord
 from database_access import DatabaseAccess
 from parser_class import Parser
+from database_access import EntradaConArgumento
 
 # Por cuestiones de seguridad el TOKEN no deberia estar en el codigo, tendria que estar oculto.
 # Para este TP no vamos a tener en cuenta temas de seguridad.
@@ -149,20 +150,53 @@ async def on_message(message):
 
     print(f"Recibido el mensaje: {message.content}")
 
-    if message.content == "/hola":
+    entry = EntradaConArgumento(message.content)
+    help_menu = '''Todos los comandos empiezan con un /
+    >name --> devovlera el nombre del bot
+    >all_countries --> devolvera todos los paises de la base de datos
+    >all_code --> devolvera todos los codigos de paises de la base de datos
+    >random_country --> devolvera un paise random de la base de datos
+    >all_countries_combined --> devolvera una string con todos los paises de la base de datos
+    >code_by_country (pais) --> devolvera el codigo del pais asignado
+    >country_by_code (codigo) --> devolvera el pais del codigo asignado
+    >country_by_inicial (frase) --> devolvera todos los paises que empiezen con esa frase
+    >country_by_ending (frase) --> devolvera todos los paises que terminen con esa frase
+    >countries_containing (frase) --> delvovera todos los paises que contengan esa frase
+    >random_list_of_countries (cantidad) --> devolver una lista con paises random del tamaño de la cantidad asignada
+    >countries_with_n_letter (cantidad) --> devolvera todos los paises con tal cantidad de letras en su nombre
+    '''
+
+    if entry == "/hola":
         result = "hola"
-    elif message.content == "/name":
+    elif entry == "/name":
         result = BOT_NAME
     elif message.content == "/all_countries arg arg":
         result = database_access.get_all_countries()
-    elif message.content == "/all_database":
+    elif entry == "/all_database":
         result = database_access.get_all()
-    elif message.content == "/all_codes":
+    elif entry == "/all_codes":
         result = database_access.get_all_codes()
-    elif message.content == "/random_country":
+    elif entry == "/random_country":
         result = database_access.get_random_country()
-    elif message.content == "/all_countrys_combined":
+    elif entry == "/all_countries_combined":
         result = database_access.get_all_countries_together()
+    elif entry == "/help":
+        result = help_menu
+    elif entry.number_of_arguments == 1:
+        if entry.comando == "/code_by_country":
+            result = database_access.get_code_by_country(entry.argumento())
+        elif entry.comando == "/country_by_code":
+            result = database_access.get_country_by_code(entry.argumento())
+        elif entry.comando == "/country_by_inicial":
+            result = database_access.get_all_countries_begginning_with(entry.argumento())
+        elif entry.comando == "/country_by_ending":
+            result = database_access.get_all_countries_ending_with(entry.argumento())
+        elif entry.comando == "/random_list_of_countries":
+            result = database_access.get_random_countries(entry.argumento())
+        elif entry.comando == "/countries_containing":
+            result = database_access.get_all_countries_containing(entry.argumento())
+        elif entry.comando == "/countries_with_n_letters":
+            result = database_access.get_all_countries_with_n_letters(entry.argumento())
     message.channel.send(result)
 
 
