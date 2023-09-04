@@ -58,7 +58,7 @@ class Parser(object):
 
     def __get_route(self, message):
         
-        route = re.search("^\w+ (\w+(\?.+)?) HTTP/1.1", message)
+        route = re.search("^\w+ (\w+)(\?.+)? HTTP/1.1", message)
         result = route.groups()
         return result[0]
 
