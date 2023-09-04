@@ -47,7 +47,7 @@ class Parser(object):
         formatted_parameters = self.__format_request_parameters(parameters)
         return f"{method} {route}{formatted_parameters} HTTP/1.1\n\n{body}"
     
-    def format_response(self, message, status=""):
+    def format_response(self, message, status="200 OK"):
         return f"HTTP/1.1 {status}\n\n{message}"
 
     def __get_method(self, message):
@@ -67,7 +67,7 @@ class Parser(object):
         method = self.__get_method(message)
         if method == "GET":
             parameters_in = self.__get_route(message)
-            parameters = re.search("\?(.*)", parameters_in) #TODO: expresion regular para capturar parametros
+            parameters = re.search("\?(.*)", parameters_in)
             parameters = parameters.groups()[0]
             parameters = parameters.split("&")
             dicts = self.__parameters_to_dict(parameters)
