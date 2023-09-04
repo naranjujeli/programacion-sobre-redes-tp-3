@@ -83,7 +83,7 @@ class Parser(object):
     
     def __get_body(self, message):
         
-        body = re.search(".+\n\n(.*)", message)
+        body = re.search("\n\s*\n(.*)", message)
         try:
             result = body.group()
             return result.strip()
@@ -140,17 +140,18 @@ class Parser(object):
 if __name__ == "__main__":
 
     messages = [
-        '''HTTP/1.1 200 OK''',
-        '''HTTP/1.1 404 Not Found
-                     id: 123
-  
-                     No se encontro el id 123'''
+       '''POST server.send.message HTTP/1.1
+                    t: 56
+                    id: 123
+ 
+                    Hola, este es el cuerpo del request.'''
    ]
 
     p = Parser()
     for message in messages:
-        parameters = p.parse_response(message)
-        print(parameters)
-        print("-------------------")
+        result = p.get_body(message)
+        print(result)
+        print("--------------")
+        
 
     
