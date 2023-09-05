@@ -67,8 +67,6 @@ class Parser(object):
             return 
 
     def __get_route(self, message):
-        # route = re.search(" ([^\s|^\?]*)", message)
-        # route = re.search("(\w+)(?(&?\w+=\w+)+)?\s", message)
         route = re.search(" ([^\s|^\?]*)", message)
         return route.groups()[0]
 
@@ -94,15 +92,25 @@ class Parser(object):
                 result[key] = value.strip()
             return result
     
+    # def __get_body(self, message):
+        
+    #     body = re.search("\n\s*\n(.*)$", message)
+    #     try:
+    #         result = body.group()
+    #         return result.strip()
+    #     except:
+    #         return ""
+
     def __get_body(self, message):
         
-        body = re.search("\n\s*\n(.*)", message)
+        body = re.search("\n\n(.*\n?)*", message)
         try:
             result = body.group()
             return result.strip()
         except:
             return ""
-        
+
+
     def __get_status_code(self, message):
 
         status_code= re.search("(\d\d\d)", message)

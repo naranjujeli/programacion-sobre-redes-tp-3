@@ -23,7 +23,9 @@ parser = Parser()
 BOT_NAME = 'Shaggy'
 
 def send_through_socket(connection, message, status="200 OK"):
-    connection.sendall(parser.format_response(message, status).encode())
+    response = parser.format_response(message, status)
+    print('Enviando al cliente:\n', response)
+    connection.sendall(response.encode())
 
 async def name_route(connection, discord_channel, data_from_client):
     await discord_channel.send(f"Mi nombre es: {BOT_NAME}")
@@ -39,67 +41,80 @@ async def read_message_route(connection, discord_channel, data_from_client):
     messages_history = discord_channel.history(limit=1)
     async for message in messages_history: # sí, es un "async for", ni idea
         last_message_in_chat = message.content
-    await discord_channel.send(f"El último mensaje del chat es: {last_message_in_chat}")
+    await discord_channel.send(f"El último mensaje del chat es: {last_message_in_chat}"[:1999])
     send_through_socket(connection, last_message_in_chat)
 
 async def database_access_route(connection, discord_channel, data_from_client):
-    # try:
-    option = data_from_client['parameters']['option'] # para abreviar
-    result = None
-    if option == "1": # Todo
-        all_data = database_access.get_all()["countries"]
-        result = ""
-        for i in range(len(all_data.keys())):
-            result += list(all_data.keys())[i] + " " + list(all_data.values())[i]["code"] + "\n"
-    elif option == "2": # Países
-        result = ""
-        for country in database_access.get_all_countries():
-            result += country + "\n"
-    elif option == "3": # Códigos
-        result = ""
-        for code in database_access.get_all_codes():
-            result += code + "\n"
-    elif option == "4": # Código según país
-        result = database_access.get_code_by_country(data_from_client["parameters"]["arg"])
-    elif option == "5": # País según código
-        result = database_access.get_country_by_code(data_from_client["parameters"]["arg"])
-    elif option == "6": # País aleatorio
-        result = database_access.get_random_country()
-    elif option == "7": # Lista aleatoria de países
-        result = database_access.get_random_countries()
-    elif option == "8": # Países por inicial
-        result = database_access.get_all_countries_begginning_with(data_from_client["parameters"]["arg"])
-    elif option == "9": # Países por última letra
-        result = database_access.get_all_countries_ending_with(data_from_client["parameters"]["arg"])
-    elif option == "10": # Países que contienen...
-        result = database_access.get_all_countries_containing(data_from_client["parameters"]["arg"])
-    elif option == "11": # Países con N letras
-        result = database_access.get_all_countries_with_n_letters(data_from_client["parameters"]["arg"])
-    elif option == "12": # Paísestodojunto
-        result = database_access.get_all_countries_together()
-    await discord_channel.send(result[:1999])
-    send_through_socket(connection, result)
-    # except:
-    #     error_message = "Ha sucedido un error al acceder a la base de datos"
-    #     await discord_channel.send(error_message)
-    #     send_through_socket(connection, error_message, "500 Internal Server Error")
+    try:
+        option = data_from_client['parameters']['option'] # para abreviar
+        result = None
+        if option == "1": # Todo
+            all_data = database_access.get_all()["countries"]
+            result = ""
+            for i in range(len(all_data.keys())):
+                result += list(all_data.keys())[i] + " " + list(all_data.values())[i]["code"] + "\n"
+        elif option == "2": # Países
+            result = ""
+            for country in database_access.get_all_countries():
+                result += country + "\n"
+        elif option == "3": # Códigos
+            result = ""
+            for code in database_access.get_all_codes():
+                result += code + "\n"
+        elif option == "4": # Código según país
+            result = database_access.get_code_by_country(data_from_client["parameters"]["arg"])
+        elif option == "5": # País según código
+            result = database_access.get_country_by_code(data_from_client["parameters"]["arg"])
+        elif option == "6": # País aleatorio
+            result = database_access.get_random_country()
+        elif option == "7": # Lista aleatoria de países
+            result = ""
+            for country in database_access.get_random_countries(int(data_from_client["parameters"]["arg"])):
+                result += country + "\n"
+        elif option == "8": # Países por inicial
+            result = ""
+            for country in  database_access.get_all_countries_begginning_with(data_from_client["parameters"]["arg"]):
+                result += country + "\n"
+        elif option == "9": # Países por última letra
+            result = ""
+            for country in  database_access.get_all_countries_ending_with(data_from_client["parameters"]["arg"]):
+                result += country + "\n"
+        elif option == "10": # Países que contienen...
+            result = ""
+            for country in  database_access.get_all_countries_containing(data_from_client["parameters"]["arg"]):
+                result += country + "\n"
+        elif option == "11": # Países con N letras
+            result = ""
+            for country in  database_access.get_all_countries_with_n_letters(int(data_from_client["parameters"]["arg"])):
+                result += country + "\n"
+        elif option == "12": # Paísestodojunto
+            result = database_access.get_all_countries_together()
+        await discord_channel.send(result[:1999]) # Discord no permite más de 2000 caracteres
+        send_through_socket(connection, result)
+    except:
+        error_message = "Ha sucedido un error al acceder a la base de datos"
+        await discord_channel.send(error_message)
+        send_through_socket(connection, error_message, "500 Internal Server Error")
 
 async def resolve_request(connection, data_from_client):
-    print("Resolviendo request:\n", data_from_client)
-    discord_main_channel = discord_client.get_channel(CHANNEL_ID)
+    discord_channel = discord_client.get_channel(CHANNEL_ID)
     if data_from_client['route'] == 'nombre':
-        await name_route(connection, discord_main_channel, data_from_client)
+        await name_route(connection, discord_channel, data_from_client)
     elif data_from_client['route'] == 'mandar_mensaje':
-        await send_message_route(connection, discord_main_channel, data_from_client)
+        await send_message_route(connection, discord_channel, data_from_client)
     elif data_from_client['route'] == 'leer_mensaje':
-        await read_message_route(connection, discord_main_channel, data_from_client)
+        await read_message_route(connection, discord_channel, data_from_client)
     elif data_from_client['route'] == 'acceso_base_de_datos':
-        await database_access_route(connection, discord_main_channel, data_from_client)
+        await database_access_route(connection, discord_channel, data_from_client)
+    elif data_from_client['route'] == 'chau':
+        await discord_channel.send('Chau')
+        send_through_socket(connection, 'Chau')
+        return False
     else:
         send_through_socket(connection, 'Ruta desconocida', "404 Not Found")
+    return True
 
 async def open_connection_to_client():
-    # Abrir la conexión al Cliente
     socket_to_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     socket_to_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     socket_to_client.bind((IP_ADDRESS, PORT))
@@ -113,17 +128,18 @@ async def listen_to_connection(connection):
         try:
             data_from_client = connection.recv(5000)
             decoded_data = data_from_client.decode('utf-8')
-            print("Mensaje recibido:", decoded_data)
+            print("Mensaje recibido:\n", decoded_data)
 
-            await resolve_request(connection, parser.parse_request(decoded_data))
+            if not (await resolve_request(connection, parser.parse_request(decoded_data))):
+                return None
         except BrokenPipeError:
             return None
 
 @discord_client.event
 async def on_ready():
-    connection_to_client = await open_connection_to_client()
+    connection = await open_connection_to_client()
     print('El bot está on-line')
-    await listen_to_connection(connection_to_client)
+    await listen_to_connection(connection)
     await discord_client.close()
     print('El bot fue apagado')
     pass
@@ -146,13 +162,13 @@ async def on_message(message):
     >all_code --> devolvera todos los codigos de paises de la base de datos
     >random_country --> devolvera un paise random de la base de datos
     >all_countries_combined --> devolvera una string con todos los paises de la base de datos
-    >code_by_country (pais) --> devolvera el codigo del pais asignado
-    >country_by_code (codigo) --> devolvera el pais del codigo asignado
-    >country_by_inicial (frase) --> devolvera todos los paises que empiezen con esa frase
-    >country_by_ending (frase) --> devolvera todos los paises que terminen con esa frase
-    >countries_containing (frase) --> delvovera todos los paises que contengan esa frase
-    >random_list_of_countries (cantidad) --> devolver una lista con paises random del tamaño de la cantidad asignada
-    >countries_with_n_letters (cantidad) --> devolvera todos los paises con tal cantidad de letras en su nombre
+    >code_by_country <pais> --> devolvera el codigo del pais asignado
+    >country_by_code <codigo> --> devolvera el pais del codigo asignado
+    >country_by_inicial <frase> --> devolvera todos los paises que empiezen con esa frase
+    >country_by_ending <frase> --> devolvera todos los paises que terminen con esa frase
+    >countries_containing <frase> --> delvovera todos los paises que contengan esa frase
+    >random_list_of_countries <cantidad> --> devolver una lista con paises random del tamaño de la cantidad asignada
+    >countries_with_n_letters <cantidad> --> devolvera todos los paises con tal cantidad de letras en su nombre
     '''
 
     result = None
