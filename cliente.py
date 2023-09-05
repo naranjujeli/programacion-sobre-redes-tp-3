@@ -45,17 +45,28 @@ def main():
                 option = input("option: ")
                 if option in ["4", "5", "8", "9", "10", "11"]:
                     if option == "4":
-                        pass
-                    arg = input("arg: ")
+                        arg = input("País: ")
+                    elif option == "5":
+                        arg = input("Código: ")
+                    elif option == "8":
+                        arg = input("Letra: ")
+                    elif option == "9":
+                        arg = input("Letra: ")
+                    elif option == "10":
+                        arg = input("Frase: ")
+                    elif option == "11":
+                        arg = input("Cantidad de letras: ")
                     database_access(socket_to_server, option, arg)
                 else:
                     database_access(socket_to_server, option)
         elif action != "0":
             print('Error, accion no valida.\n\n\n')
+            continue
         data_from_server = socket_to_server.recv(5000)
         decoded_data = data_from_server.decode()
+        parsed_data = parser.parse_response(decoded_data)
         if len(decoded_data) > 0:
-            print("Respuesta del servidor:\n", decoded_data)
+            print("Respuesta del servidor:\n", parsed_data["message"])
     
 
     socket_to_server.close()
