@@ -56,31 +56,43 @@ class Parser(object):
         result = method.groups()
         return result[0]
 
+    def __get_route_2(self, message):
+        try:
+            route = re.search(" ([^\s]*) ", message)
+            route2 = re.search(" ([^\s|^\?]*)\?", message)
+            if len(route.groups()[0]) > len(route2.group()[0]):
+                return route2.group().replace("?", "").strip()
+            return route.group().strip()
+        except AttributeError:
+            return 
+
     def __get_route(self, message):
-        
-        route = re.search("^\w+ (\w+)(\?.+)? HTTP/1.1", message)
-        result = route.groups()
-        return result[0]
+        # route = re.search(" ([^\s|^\?]*)", message)
+        # route = re.search("(\w+)(?(&?\w+=\w+)+)?\s", message)
+        route = re.search(" ([^\s|^\?]*)", message)
+        return route.groups()[0]
 
     def __get_parameters(self, message):
 
         method = self.__get_method(message)
-        try:
-            if method == "GET":
-
-                parameters = re.search("^GET \w+\?(.*) HTTP\/1.1$", message)
-                parameters = parameters.groups()[0]
-                parameters = parameters.split("&")
-                dicts = self.__parameters_to_dict(parameters)
-                return dicts
-            parameters_in = re.findall("(\w+): (\w+)", message)
-            parameters = {}
-            for parameter in parameters_in:
-                parameters[parameter[0]] = parameter[1]
-            return parameters
-        except AttributeError as e:
-            print(e)
-            return {}
+        if method == "GET":
+            filter = "(\w+=[^&|^\s]*)[&\s]"
+            parameters = re.findall(filter, message)
+            result  = {}
+            for parameter in parameters:
+                key = parameter.split("=")[0]
+                value = parameter.split("=")[1]
+                result[key] = value
+            return result
+        else:
+            filter = "\s+(.*: .*)\s*\n"
+            parameters = re.findall(filter, message)
+            result = {}
+            for parameter in parameters:   
+                key = parameter.split(":")[0]
+                value = parameter.split(":")[1]
+                result[key] = value.strip()
+            return result
     
     def __get_body(self, message):
         
@@ -145,14 +157,17 @@ if __name__ == "__main__":
                     t: 56
                     id: 123
  
-                    Hola, este es el cuerpo del request.'''
+                    Hola, este es el cuerpo del request.''',
+                    "GET acceso_base_de_datos?option=1&arg=0 HTTP/1.1"
    ]
 
+    message = "GET acceso_base_de_datos?option=1&arg=0 HTTP/1.1"
+
+
     p = Parser()
-    for message in messages:
-        result = p.get_body(message)
-        print(result)
-        print("--------------")
+    result = p.parse_request(messages[0])
+    print(result)
+    
         
 
     

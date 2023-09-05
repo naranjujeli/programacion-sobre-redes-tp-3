@@ -4,9 +4,8 @@
 
 import socket
 import discord
-from database_access import DatabaseAccess
+from database_access import DatabaseAccess, EntradaConArgumento
 from parser_class import Parser
-from database_access import EntradaConArgumento
 
 # Por cuestiones de seguridad el TOKEN no deberia estar en el codigo, tendria que estar oculto.
 # Para este TP no vamos a tener en cuenta temas de seguridad.
@@ -26,94 +25,83 @@ BOT_NAME = 'Shaggy'
 def send_through_socket(connection, message, status="200 OK"):
     connection.sendall(parser.format_response(message, status).encode())
 
+async def name_route(connection, discord_channel, data_from_client):
+    await discord_channel.send(f"Mi nombre es: {BOT_NAME}")
+    send_through_socket(connection, BOT_NAME)
+
+async def send_message_route(connection, discord_channel, data_from_client):
+    message = data_from_client['body']
+    await discord_channel.send(f"Nuevo mensaje: {message}")
+    send_through_socket(connection, f"Mensaje enviado: {message}")
+
+async def read_message_route(connection, discord_channel, data_from_client):
+    last_message_in_chat = None
+    messages_history = discord_channel.history(limit=1)
+    async for message in messages_history: # sí, es un "async for", ni idea
+        last_message_in_chat = message.content
+    await discord_channel.send(f"El último mensaje del chat es: {last_message_in_chat}")
+    send_through_socket(connection, last_message_in_chat)
+
+async def database_access_route(connection, discord_channel, data_from_client):
+    # try:
+    option = data_from_client['parameters']['option'] # para abreviar
+    result = None
+    if option == "1": # Todo
+        all_data = database_access.get_all()["countries"]
+        result = ""
+        for i in range(len(all_data.keys())):
+            result += list(all_data.keys())[i] + " " + list(all_data.values())[i]["code"] + "\n"
+    elif option == "2": # Países
+        result = ""
+        for country in database_access.get_all_countries():
+            result += country + "\n"
+    elif option == "3": # Códigos
+        result = ""
+        for code in database_access.get_all_codes():
+            result += code + "\n"
+    elif option == "4": # Código según país
+        result = database_access.get_code_by_country(data_from_client["parameters"]["arg"])
+    elif option == "5": # País según código
+        result = database_access.get_country_by_code(data_from_client["parameters"]["arg"])
+    elif option == "6": # País aleatorio
+        result = database_access.get_random_country()
+    elif option == "7": # Lista aleatoria de países
+        result = database_access.get_random_countries()
+    elif option == "8": # Países por inicial
+        result = database_access.get_all_countries_begginning_with(data_from_client["parameters"]["arg"])
+    elif option == "9": # Países por última letra
+        result = database_access.get_all_countries_ending_with(data_from_client["parameters"]["arg"])
+    elif option == "10": # Países que contienen...
+        result = database_access.get_all_countries_containing(data_from_client["parameters"]["arg"])
+    elif option == "11": # Países con N letras
+        result = database_access.get_all_countries_with_n_letters(data_from_client["parameters"]["arg"])
+    elif option == "12": # Paísestodojunto
+        result = database_access.get_all_countries_together()
+    await discord_channel.send(result[:1999])
+    send_through_socket(connection, result)
+    # except:
+    #     error_message = "Ha sucedido un error al acceder a la base de datos"
+    #     await discord_channel.send(error_message)
+    #     send_through_socket(connection, error_message, "500 Internal Server Error")
+
 async def resolve_request(connection, data_from_client):
-    print("Resolviendo request:", data_from_client)
+    print("Resolviendo request:\n", data_from_client)
     discord_main_channel = discord_client.get_channel(CHANNEL_ID)
     if data_from_client['route'] == 'nombre':
-        await discord_main_channel.send(f"Mi nombre es: {BOT_NAME}")
-        send_through_socket(connection, BOT_NAME)
+        await name_route(connection, discord_main_channel, data_from_client)
     elif data_from_client['route'] == 'mandar_mensaje':
-        message = data_from_client['body']
-
-        await discord_main_channel.send(f"Nuevo mensaje: {message}")
-        send_through_socket(connection, f"Mensaje enviado: {message}")
+        await send_message_route(connection, discord_main_channel, data_from_client)
     elif data_from_client['route'] == 'leer_mensaje':
-        last_message_in_chat = None
-        messages_history = discord_main_channel.history(limit=1)
-        async for message in messages_history: # sí, es un "async for", ni idea
-            last_message_in_chat = message.content
-        
-        await discord_main_channel.send(f"El último mensaje del chat es: {last_message_in_chat}")
-        send_through_socket(connection, last_message_in_chat)
+        await read_message_route(connection, discord_main_channel, data_from_client)
     elif data_from_client['route'] == 'acceso_base_de_datos':
-        print("El cliente pide un acceso a la base de datos. Los parametros del paquete HTTP son:")
-        print(data_from_client['parameters'])
-        try:
-            option = data_from_client['parameters']['option'] # para abreviar
-            if option == "1": # Todo
-                all_data = database_access.get_all()["countries"]
-                result = ""
-                for i in range(len(all_data.keys())):
-                    result += list(all_data.keys())[i] + " " + list(all_data.values())[i] + "\n"
-                await discord_main_channel.send(result)
-                send_through_socket(connection, result)
-            elif option == "2": # Países
-                result = ""
-                for country in database_access.get_all_countries():
-                    result += country + "\n"
-                await discord_main_channel.send(result)
-                send_through_socket(connection, result)
-            elif option == "3": # Códigos
-                result = ""
-                for code in database_access.get_all_codes():
-                    result += code + "\n"
-                await discord_main_channel.send(result)
-                send_through_socket(connection, result)
-            elif option == "4": # Código según país
-                result = database_access.get_code_by_country(data_from_client["parameters"]["arg"])
-                await discord_main_channel.send(result)
-                send_through_socket(connection, result)
-            elif option == "5": # País según código
-                result = database_access.get_country_by_code(data_from_client["parameters"]["arg"])
-                await discord_main_channel.send(result)
-                send_through_socket(connection, result)
-            elif option == "6": # País aleatorio
-                result = database_access.get_random_country()
-                await discord_main_channel.send(result)
-                send_through_socket(connection, result)
-            elif option == "7": # Lista aleatoria de países
-                result = database_access.get_random_countries()
-                await discord_main_channel.send(result)
-                send_through_socket(connection, result)
-            elif option == "8": # Países por inicial
-                result = database_access.get_all_countries_begginning_with(data_from_client["parameters"]["arg"])
-                await discord_main_channel.send(result)
-                send_through_socket(connection)
-            elif option == "9": # Países por última letra
-                result = database_access.get_all_countries_ending_with(data_from_client["parameters"]["arg"])
-                await discord_main_channel.send(result)
-                send_through_socket(connection, result)
-            elif option == "10": # Países que contienen...
-                result = database_access.get_all_countries_containing(data_from_client["parameters"]["arg"])
-                await discord_main_channel.send(result)
-                send_through_socket(connection)
-            elif option == "11": # Países con N letras
-                result = database_access.get_all_countries_with_n_letters(data_from_client["parameters"]["arg"])
-                await discord_main_channel.send(result)
-                send_through_socket(connection)
-            elif option == "12": # Paísestodojunto
-                result = database_access.get_all_countries_together()
-                await discord_main_channel.send(result)
-                send_through_socket(connection)
-        except:
-            await discord_main_channel.send("Ha sucedido un error al acceder a la base de datos")
-            send_through_socket(connection, "Ha sucedido un error al acceder a la base de datos", "500 Internal Server Error")
+        await database_access_route(connection, discord_main_channel, data_from_client)
     else:
         send_through_socket(connection, 'Ruta desconocida', "404 Not Found")
 
 async def open_connection_to_client():
     # Abrir la conexión al Cliente
     socket_to_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socket_to_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     socket_to_client.bind((IP_ADDRESS, PORT))
     socket_to_client.listen()
     connection, address = socket_to_client.accept()
@@ -123,7 +111,7 @@ async def open_connection_to_client():
 async def listen_to_connection(connection):
     while True:
         try:
-            data_from_client = connection.recv(1024)
+            data_from_client = connection.recv(5000)
             decoded_data = data_from_client.decode('utf-8')
             print("Mensaje recibido:", decoded_data)
 
@@ -133,11 +121,11 @@ async def listen_to_connection(connection):
 
 @discord_client.event
 async def on_ready():
-    # connection_to_client = await open_connection_to_client()
-    # print('El bot está on-line')
-    # await listen_to_connection(connection_to_client)
-    # await discord_client.close()
-    # print('El bot fue apagado')
+    connection_to_client = await open_connection_to_client()
+    print('El bot está on-line')
+    await listen_to_connection(connection_to_client)
+    await discord_client.close()
+    print('El bot fue apagado')
     pass
 
 @discord_client.event
