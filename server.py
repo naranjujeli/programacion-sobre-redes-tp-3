@@ -27,7 +27,7 @@ def send_through_socket(connection, message, status="200 OK"):
     print('Enviando al cliente:\n', response)
     connection.sendall(response.encode())
 
-async def name_route(connection, discord_channel, data_from_client):
+async def name_route(connection, discord_channel):
     await discord_channel.send(f"Mi nombre es: {BOT_NAME}")
     send_through_socket(connection, BOT_NAME)
 
@@ -36,7 +36,7 @@ async def send_message_route(connection, discord_channel, data_from_client):
     await discord_channel.send(f"Nuevo mensaje: {message}")
     send_through_socket(connection, f"Mensaje enviado: {message}")
 
-async def read_message_route(connection, discord_channel, data_from_client):
+async def read_message_route(connection, discord_channel):
     last_message_in_chat = None
     messages_history = discord_channel.history(limit=1)
     async for message in messages_history: # sí, es un "async for", ni idea
@@ -96,16 +96,23 @@ async def database_access_route(connection, discord_channel, data_from_client):
         await discord_channel.send(error_message)
         send_through_socket(connection, error_message, "500 Internal Server Error")
 
+async def ping_route(connection, discord_channel):
+    result = "Ping: " + str(int(round(discord_client.latency, 3)*1000)) + "ms"
+    await discord_channel.send(result)
+    send_through_socket(connection, result)
+
 async def resolve_request(connection, data_from_client):
     discord_channel = discord_client.get_channel(CHANNEL_ID)
     if data_from_client['route'] == 'nombre':
-        await name_route(connection, discord_channel, data_from_client)
+        await name_route(connection, discord_channel)
     elif data_from_client['route'] == 'mandar_mensaje':
         await send_message_route(connection, discord_channel, data_from_client)
     elif data_from_client['route'] == 'leer_mensaje':
-        await read_message_route(connection, discord_channel, data_from_client)
+        await read_message_route(connection, discord_channel)
     elif data_from_client['route'] == 'acceso_base_de_datos':
         await database_access_route(connection, discord_channel, data_from_client)
+    elif data_from_client['route'] == 'ping':
+        await ping_route(connection, discord_channel)
     elif data_from_client['route'] == 'chau':
         await discord_channel.send('Chau')
         send_through_socket(connection, 'Chau')

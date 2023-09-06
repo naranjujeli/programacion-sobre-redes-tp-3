@@ -12,16 +12,19 @@ def send_through_socket(http_message, connection):
     connection.sendall(http_message.encode())
 
 def get_name(socket_to_server):
-    send_through_socket(parser.format_request(body="", method="GET", route="nombre", parameters={}), socket_to_server)
+    send_through_socket(parser.format_request("", "GET", "nombre", {}), socket_to_server)
 
 def send_message(socket_to_server, mensaje):
-    send_through_socket(parser.format_request(body=mensaje, method="POST", route="mandar_mensaje", parameters={}), socket_to_server)
+    send_through_socket(parser.format_request(mensaje, "POST", "mandar_mensaje", {}), socket_to_server)
 
 def read_message(socket_to_server):
-    send_through_socket(parser.format_request(body="", method="GET", route="leer_mensaje", parameters={}), socket_to_server)
+    send_through_socket(parser.format_request("", "GET", "leer_mensaje", {}), socket_to_server)
 
 def database_access(socket_to_server, option, arg="0"):
-    send_through_socket(parser.format_request(body="", method="GET", route="acceso_base_de_datos", parameters={"option": option, "arg": arg}), socket_to_server)
+    send_through_socket(parser.format_request("", "GET", "acceso_base_de_datos", {"option": option, "arg": arg}), socket_to_server)
+
+def ping(socket_to_server):
+    send_through_socket(parser.format_request("", "GET", "ping", {}), socket_to_server)
 
 def main():
     socket_to_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -29,7 +32,7 @@ def main():
     
     action = ""
     while action != "0":
-        print('Ingrese una accion:\n0 = Salir\n1 = Nombre del Bot\n2 = Enviar mensaje\n3 = Leer ultimo mensaje\n4 = Acceso a la base de datos')
+        print('Ingrese una accion:\n0 = Salir\n1 = Nombre del Bot\n2 = Enviar mensaje\n3 = Leer ultimo mensaje\n4 = Acceso a la base de datos\n5 = Obtener ping con API de Discord')
         
         action = input()
         if action == "1":
@@ -62,6 +65,8 @@ def main():
                     database_access(socket_to_server, option, arg)
                 else:
                     database_access(socket_to_server, option)
+        elif action == "5":
+            ping(socket_to_server)
         elif action != "0":
             print('Error, accion no valida.\n\n\n')
             continue
