@@ -56,16 +56,6 @@ class Parser(object):
         result = method.groups()
         return result[0]
 
-    def __get_route_2(self, message):
-        try:
-            route = re.search(" ([^\s]*) ", message)
-            route2 = re.search(" ([^\s|^\?]*)\?", message)
-            if len(route.groups()[0]) > len(route2.group()[0]):
-                return route2.group().replace("?", "").strip()
-            return route.group().strip()
-        except AttributeError:
-            return 
-
     def __get_route(self, message):
         route = re.search(" ([^\s|^\?]*)", message)
         return route.groups()[0]
@@ -91,15 +81,6 @@ class Parser(object):
                 value = parameter.split(":")[1]
                 result[key] = value.strip()
             return result
-    
-    # def __get_body(self, message):
-        
-    #     body = re.search("\n\s*\n(.*)$", message)
-    #     try:
-    #         result = body.group()
-    #         return result.strip()
-    #     except:
-    #         return ""
 
     def __get_body(self, message):
         
@@ -125,38 +106,6 @@ class Parser(object):
             return status.groups()[0]
         except Exception as e:
             return e
-            
-    def __parameters_to_dict(self, parameters):
-        
-        a = "^"
-
-        result = {}
-        for parameter in parameters:
-            name = re.search("(\w+)=", parameter)
-            result_name = name.groups()[0]
-            result_name.replace("=", "")
-            value = re.search("=(\w+)", parameter)
-            result_value = value.groups()[0]
-            result_value.replace("=", "")
-
-            result[result_name] = result_value
-
-        return result
-
-# para testear pueden usar los siguientes test:
-
-# p.parse_request('''POST name HTTP/1.1''')                          -> {'method': 'POST', 'route': 'name', 'parameters': {}, 'message': '', 'version': 1.1}
-# p.parse_request('''POST server.send.message HTTP/1.1
-#                    t: 56
-#                    id: 123
-# 
-#                    Hola, este es el cuerpo del request.''')         -> {'method': 'POST', 'route': 'server.send.message', 'parameters': {'t': 56, 'id': 123}, 'message': 'Hola, este es el cuerpo del request.', 'version': 1.1}
-
-# p.parse_response('''HTTP/1.1 200 OK''')          -> {'status_code': 200, 'status': 'OK', 'parameters': {}, 'message': '', 'version': 1.1}
-# p.parse_response('''HTTP/1.1 404 Not Found
-#                     id: 123
-#  
-#                     No se encontro el id 123''') -> {'status_code': 404, 'status': 'Not Found', 'parameters': {id: 123}, 'message': 'No se encontro el id 123', 'version': 1.1}
 
 if __name__ == "__main__":
 
@@ -171,11 +120,12 @@ if __name__ == "__main__":
 
     message = "GET acceso_base_de_datos?option=1&arg=0 HTTP/1.1"
 
-
     p = Parser()
     result = p.parse_request(messages[0])
     print(result)
     
+
+ #''' POST '''
         
 
     
